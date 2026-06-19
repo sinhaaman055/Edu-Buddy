@@ -146,7 +146,7 @@ func ForgetPass(c *gin.Context){
 		c.JSON(http.StatusBadRequest,gin.H{"message":"Credentials donot match"})
 		return
 	}
-	secret_key:=os.Getenv("JWT_SECRET")
+	secret_key:=os.Getenv("RESET_KEY")
 	claims:=jwt.MapClaims{
 		"username":CheckedUser.Username,
 		"email":CheckedUser.Email,
