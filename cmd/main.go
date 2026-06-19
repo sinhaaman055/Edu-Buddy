@@ -1,10 +1,8 @@
 package main
-
 import (
     "edubuddy/pkg/routes"
 	"edubuddy/pkg/database"
 	"os"
-
 	"github.com/gin-gonic/gin"
 )
 func main(){
@@ -17,5 +15,4 @@ func main(){
 	router:=gin.Default()
 	routes.AuthRoute(router)
   router.Run(":"+Port)
-
 }
