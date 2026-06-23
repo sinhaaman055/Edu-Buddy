@@ -14,5 +14,6 @@ func main(){
 	}
 	router:=gin.Default()
 	routes.AuthRoute(router)
-  router.Run(":"+Port)
+	routes.RoomRoutes(router)
+    router.Run(":"+Port)
 }
