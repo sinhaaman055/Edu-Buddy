@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -37,6 +36,7 @@ func Authenticate() gin.HandlerFunc{
 		if ok && finalToken.Valid{
 			c.Set("email", claims["email"])
 			c.Set("username", claims["username"])
+			c.Set("id", claims["id"])
 		}
 		c.Next()
 	}
@@ -71,5 +71,4 @@ func AuthenticateReserToken() gin.HandlerFunc{
 		}
 		c.Next()
 	}
-
 }
