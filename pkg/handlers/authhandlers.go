@@ -104,6 +104,7 @@ func Login(c *gin.Context){
 	}
 	jwtsecret:=os.Getenv("JWT_SECRET")
 	claims:=jwt.MapClaims{
+		"id":ExistUser.ID.Hex(),
 		"username":ExistUser.Username,
 		"email":ExistUser.Email,
 		"iat":time.Now().Unix(),
