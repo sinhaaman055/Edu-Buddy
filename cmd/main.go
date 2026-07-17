@@ -1,8 +1,11 @@
 package main
+
 import (
-    "edubuddy/pkg/routes"
 	"edubuddy/pkg/database"
+	"edubuddy/pkg/hub"
+	"edubuddy/pkg/routes"
 	"os"
+
 	"github.com/gin-gonic/gin"
 )
 func main(){
@@ -12,6 +15,7 @@ func main(){
 	if Port==""{
 		Port="8090"
 	}
+	go hub.RoomHub.Run()
 	router:=gin.Default()
 	routes.AuthRoute(router)
 	routes.RoomRoutes(router)
