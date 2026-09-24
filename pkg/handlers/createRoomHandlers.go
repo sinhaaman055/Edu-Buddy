@@ -33,7 +33,7 @@ func CreateRoom(c* gin.Context){
    ctx,cancel:=context.WithTimeout(context.Background(),10*time.Second)
    defer cancel()
    var existingRoom models.Room
-	err=roomCollection.FindOne(ctx, bson.M{"created_by":usernamestr}).Decode(&existingRoom)
+	err=roomCollection.FindOne(ctx, bson.M{"createdby":usernamestr}).Decode(&existingRoom)
 	if err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Message": "You already have created one room",
