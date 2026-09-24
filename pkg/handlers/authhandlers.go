@@ -116,9 +116,9 @@ func Login(c *gin.Context){
 		c.JSON(http.StatusBadRequest,gin.H{"Message":"Not able to Sign the token"})
 		return
 	}
-	c.JSON(http.StatusAccepted,gin.H{
+	c.JSON(http.StatusOK,gin.H{
 		"Message":"Successfully Log in",
-		"JWTtoken":TokenString,
+		"token":TokenString,
 		"User":ExistUser.Username,
 	})
 }
@@ -133,16 +133,35 @@ func ForgetPass(c *gin.Context){
 	collection:=database.Client.Database("Light").Collection("Users")
 	ctx,cancel:=context.WithTimeout(context.Background(),10*time.Second)
 	defer cancel()
-	errr:=collection.FindOne(ctx,bson.M{
-		"$or": []bson.M{
-        {"email":olduser.Email},
-        {"username":olduser.Username},
-    },
-	}).Decode(&CheckedUser)
-	if errr!=nil{
-		c.JSON(http.StatusBadGateway,gin.H{"Message":"No User found"})
-       return
+
+
+
+	var filter bson.M
+	if olduser.Email != "" && olduser.Username != "" {
+		filter = bson.M{
+			"$or": []bson.M{
+				{"email": olduser.Email},
+				{"username": olduser.Username},
+			},
+		}
+	} else if olduser.Email != "" {
+		filter = bson.M{"email": olduser.Email}
+	} else if olduser.Username != "" {
+		filter = bson.M{"username": olduser.Username}
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Please provide either Email or Username"})
+		return
 	}
+
+	errr := collection.FindOne(ctx, filter).Decode(&CheckedUser)
+	if errr != nil {
+		// FIX 2: Use 404 StatusNotFound instead of 502 StatusBadGateway
+		c.JSON(http.StatusNotFound, gin.H{"Message": "No User found"})
+		return
+	}
+
+
+
 	if(olduser.DOB!=CheckedUser.DOB){
 		c.JSON(http.StatusBadRequest,gin.H{"message":"Credentials donot match"})
 		return
