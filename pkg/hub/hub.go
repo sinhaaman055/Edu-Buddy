@@ -1,6 +1,13 @@
 package hub
 
-import "github.com/gorilla/websocket"
+import (
+	"edubuddy/pkg/models"
+	"encoding/json"
+	"sync"
+	"time"
+
+	"github.com/gorilla/websocket"
+)
 
 type Client struct {
 	Conn *websocket.Conn
@@ -8,7 +15,9 @@ type Client struct {
 	RoomId string 
 }
 type Room struct{
+	mutex sync.Mutex
 	Members map[*Client]bool
+	Session models.TestSession
 }
 type Hub struct{
    Rooms map[string]*Room
@@ -21,6 +30,54 @@ var RoomHub = Hub{
 	Broadcast:  make(chan []byte),
 	Register:   make(chan *Client),
 	Unregister: make(chan *Client),
+}
+func(h *Hub) StartRoomTimer(roomID string){
+   ticker:=time.NewTicker(1*time.Second)
+   room:=h.Rooms[roomID]
+   go func(){
+	   for {
+            select{
+			case <-ticker.C:
+				room.mutex.Lock()
+				if room.Session.TimeRemaiming<=0{
+					room.Session.TestIsActive=false
+					room.mutex.Unlock()
+					ticker.Stop()
+                    h.BroadcastToRoom(roomID, "TEST_ENDED", map[string]string{
+                     "message": "Test completed successfully!",
+                    })
+					return
+				}
+				room.Session.TimeRemaiming--
+				room.mutex.Unlock()
+			case <-room.Session.TickerDone:
+				ticker.Stop()
+				return
+			}   
+	   }
+   }()
+}
+func (h *Hub) BroadcastToRoom(roomID string, event string, data interface{}) {
+	room, exist:=h.Rooms[roomID]
+	if !exist {
+		return
+	}
+	msg := map[string]interface{}{
+		"event": event,
+		"data":  data,
+	}
+	jsonBytes, err := json.Marshal(msg)
+	if err != nil {
+		return
+	}
+	for client := range room.Members {
+		select {
+		case client.Send <- jsonBytes:
+		default:
+			close(client.Send)
+			delete(room.Members, client)
+		}
+	}
 }
 func(h *Hub)Run(){
 	for{

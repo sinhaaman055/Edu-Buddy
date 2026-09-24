@@ -9,9 +9,10 @@ import (
 	"log"
 	"net/http"
 	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson"
 )
 var Upgrader =websocket.Upgrader {
    CheckOrigin: func(r *http.Request) bool {
@@ -20,25 +21,10 @@ var Upgrader =websocket.Upgrader {
 }
 func Wshandler(c *gin.Context){
    roomId:=c.Param("roomId")
-   val, exists := c.Get("id")
-   if !exists {
-      log.Println("User ID not found in context")
-      return
-   }
-   userIDStr, ok := val.(string)
-   if !ok {
-      log.Println("User ID is not a string")
-      return
-   }
-   senderObjectID, err := primitive.ObjectIDFromHex(userIDStr)
-   if err != nil {
-      log.Println("Invalid User ID format:", err)
-      return
-    }
     roomCollection := database.Client.Database("Light").Collection("StudyRooms")
 	 roomCtx, roomCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	 defer roomCancel()
-	 count, err := roomCollection.CountDocuments(roomCtx, map[string]string{"_id": roomId})
+	 count, err := roomCollection.CountDocuments(roomCtx,bson.M{"_id": roomId})
 	 if err != nil || count == 0 {
 		log.Println("Room does not exist in Database:", roomId)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Room not found"})
@@ -79,7 +65,6 @@ func Wshandler(c *gin.Context){
      }
      msg.RoomId=roomId
      msg.TimeStamp=time.Now()
-     msg.SenderID=senderObjectID
      collection:=database.Client.Database("Light").Collection("Messages")
      ctx,cancel:=context.WithTimeout(context.Background(),10*time.Second)
      _,err=collection.InsertOne(ctx,msg,)

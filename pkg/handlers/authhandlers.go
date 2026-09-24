@@ -155,13 +155,9 @@ func ForgetPass(c *gin.Context){
 
 	errr := collection.FindOne(ctx, filter).Decode(&CheckedUser)
 	if errr != nil {
-		// FIX 2: Use 404 StatusNotFound instead of 502 StatusBadGateway
 		c.JSON(http.StatusNotFound, gin.H{"Message": "No User found"})
 		return
 	}
-
-
-
 	if(olduser.DOB!=CheckedUser.DOB){
 		c.JSON(http.StatusBadRequest,gin.H{"message":"Credentials donot match"})
 		return

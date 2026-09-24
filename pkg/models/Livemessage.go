@@ -9,6 +9,7 @@ import (
 type Message struct {
 	RoomId    string	               `json:"roomId" bson:"roomId"`
 	SenderID  primitive.ObjectID       `json:"senderid" bson:"senderid"` 
+	SenderName string                  `json:"sendername" bson:"sendername"`
 	TimeStamp time.Time                `json:"timeStamp" bson:"timeStamp"`
 	Content   string                   `json:"content" bson:"content" binding:"required"`
 }
