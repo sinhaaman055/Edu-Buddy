@@ -1,10 +1,13 @@
 package database
+
 import (
 	"context"
 	"log"
 	"os"
 	"time"
+
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -34,6 +37,13 @@ func Connectdb(){
 		log.Fatal("Ping disconnected",err)
 	}
      log.Println("Connection succeeded")
+// TTL indexing 
+    indexModel := mongo.IndexModel{
+        Keys: bson.D{{"createdat", 1}},
+        Options: options.Index().SetExpireAfterSeconds(14400), // 2 hours
+    }
+	collection := Client.Database("Light").Collection("StudyRooms")
+_, err = collection.Indexes().CreateOne(ctx, indexModel)
 }
 
 
